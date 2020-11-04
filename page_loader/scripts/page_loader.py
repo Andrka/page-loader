@@ -15,10 +15,7 @@ def main():
     args = cli.parse_arguments().parse_args()
     if not values.is_correct(args.url):
         raise ValueError('Wrong url!')
-    files.save(
-        files.load(args.url),
-        values.collect_path(args.output, args.url),
-    )
+    files.save(args.output, args.url)
     print('Done!')  # noqa: WPS421
 
 

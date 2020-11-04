@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Andrka-page-loader"
-version = "0.1.0"
+version = "0.2.0"
 description = "Page loader"
 authors = ["Andrka <postbox4mail@gmail.com>"]
 packages = [
@@ -9,12 +9,13 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
+requests = "^2.24.0"
+beautifulsoup4 = "^4.9.3"
 
 [tool.poetry.dev-dependencies]
 wemake-python-styleguide = "^0.14.1"
 pytest = "^6.1.1"
 pytest-cov = "^2.10.1"
-requests = "^2.24.0"
 
 [tool.poetry.scripts]
 page-loader = "page_loader.scripts.page_loader:main"
