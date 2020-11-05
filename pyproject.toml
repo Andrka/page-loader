@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Andrka-page-loader"
-version = "0.2.0"
+version = "0.3.0"
 description = "Page loader"
 authors = ["Andrka <postbox4mail@gmail.com>"]
 packages = [

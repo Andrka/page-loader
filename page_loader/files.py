@@ -2,6 +2,7 @@
 
 """Download and save data module."""
 
+import logging
 import os
 from urllib.parse import urljoin
 
@@ -17,12 +18,13 @@ def load(url: str):
     """Downdoad requested url and return Response object.
 
     Raises:
-        ValueError: Can't find the page you're looking for.
+        ValueError: Can`t find the page you're looking for.
     """
     page = requests.get(url)
     if page.status_code in STATUS_CODES:
         return page
-    raise ValueError("Can't find the page you're looking for!")
+    logging.critical("can`t find the page you're looking for")
+    raise ValueError("Can`t find the page you're looking for!")
 
 
 def parse_html(path: str):
@@ -56,9 +58,11 @@ def save(output: str, url: str):  # noqa: WPS210, WPS231
     if not os.path.isdir(output):
         os.mkdir(output)
     save_html(html_path, load_data)
+    logging.info('"{0}" was saved'.format(os.path.basename(html_path)))
     soup = parse_html(html_path)
     output_dir = values.collect_path(output, url, 'dir')
-    os.mkdir(output_dir)
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
     resources = soup.find_all(values.is_resource)
     if url[-1] != '/':
         url = '{0}/'.format(url)
@@ -67,6 +71,7 @@ def save(output: str, url: str):  # noqa: WPS210, WPS231
         try:
             load_data = load(resource_url)
         except:  # noqa: S110, E722
+            logging.error('"{0}" can`t be downloaded'.format(resource_url))
             del resource[values.ATTR]  # noqa: WPS420
         else:
             resource_path, extension = os.path.splitext(resource[values.ATTR])
@@ -77,6 +82,7 @@ def save(output: str, url: str):  # noqa: WPS210, WPS231
                 extension,
             )
             save_data(data_path, load_data)
+            logging.info('"{0}" was saved'.format(os.path.basename(data_path)))
             _, resource_name = os.path.split(data_path)
             resource[values.ATTR] = os.path.join(
                 os.path.basename(os.path.normpath(output_dir)),
