@@ -3,28 +3,24 @@
 
 """General script."""
 
-import logging
+import sys
 
-from page_loader import cli, files, values
+from page_loader import cli, files, log, values
 
 
-def main():
-    """Page loader.
-
-    Raises:
-        ValueError: Wrong url.
-    """
+def main():  # noqa: WPS213
+    """Page loader."""
     args = cli.parse_arguments().parse_args()
-    logging.basicConfig(
-        format='%(levelname)s - %(asctime)s - %(message)s',  # noqa: WPS323
-        level=cli.LOGGING[args.logging],
-        datefmt='%d-%b-%y %H:%M:%S',  # noqa: WPS323
-    )
+    logger = log.set_logger(args.log)
     if not values.is_correct(args.url):
-        logging.critical('wrong url')
-        raise ValueError('Wrong url!')
-    files.save(args.output, args.url)
-    logging.info('"{0}" was downloaded!'.format(args.url))
+        logger.error('wrong url')
+        sys.exit(1)
+    try:
+        files.save(args.output, args.url)
+    except log.KnownError:
+        sys.exit(1)
+    logger.info('"{0}" was downloaded!'.format(args.url))
+    sys.exit(0)
 
 
 if __name__ == '__main__':

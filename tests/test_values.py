@@ -2,6 +2,8 @@
 
 """Test values module."""
 
+import logging
+
 import pytest
 
 from page_loader import values
@@ -17,8 +19,9 @@ from page_loader import values
     ('/home', 'https://andrka.github.io/page-loader-test/', 'dir', '/home/andrka-github-io-page-loader-test-_files'),
     ('/home', 'https://andrka.github.io/page-loader-test', 'dir', '/home/andrka-github-io-page-loader-test_files'),
 ])
-def test_collect_path(output_path: str, url: str, output: str, full_path: str):
+def test_collect_path(caplog, output_path: str, url: str, output: str, full_path: str):
     """Test collect_path function."""
+    caplog.set_level(logging.INFO)
     assert values.collect_path(output_path, url, output) == full_path
 
 
@@ -30,13 +33,15 @@ def test_collect_path(output_path: str, url: str, output: str, full_path: str):
     ('andrka.github.io/page-loader-test', False),
     ('https://', False),
 ])
-def test_is_correct(url: str, expectation: bool):
+def test_is_correct(caplog, url: str, expectation: bool):
     """Test is_correct function."""
+    caplog.set_level(logging.INFO)
     assert values.is_correct(url) is expectation
 
 
-def test_is_resource(soup):
+def test_is_resource(caplog, soup):
     """Test is_resource function."""
+    caplog.set_level(logging.INFO)
     tags = soup.find_all()
     resources = 0
     for tag in tags:

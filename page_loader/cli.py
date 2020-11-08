@@ -3,14 +3,9 @@
 """Realize command line interface."""
 
 import argparse
-import logging
 import os
 
 DEFAULT_PATH = os.getcwd()
-LOGGING = {  # noqa: WPS407
-    'full': logging.INFO,
-    'short': logging.ERROR,
-}
 
 
 def parse_arguments():
@@ -22,13 +17,13 @@ def parse_arguments():
         help='set save location (default: current directory)',
     )
     parser.add_argument(
-        '--logging',
+        '--log',
         default='full',
         choices=[
             'full',
-            'short',
+            'errors',
         ],
-        help='set logging of output (default: full)',
+        help='set logging (default: full)',
     )
     parser.add_argument('url', help='set requested web page in full format')
     return parser
