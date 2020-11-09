@@ -6,17 +6,17 @@ import os
 import re
 from urllib.parse import urlparse
 
-MAX_FILE_NAME_LENGTH = 255
-FILE_NAME_END = '.html'
-MAX_DIR_NAME_LENGTH = 4096
-DIR_NAME_END = '_files'
+MAX_NAME_LEN = 255
+FILE_EXT = '.html'
+MAX_DIR_LEN = 4096
+DIR_EXT = '_files'
 
 
-def collect_path(
+def collect(
     output_path: str,
     url: str,
     output: str = 'file',
-    extension: str = FILE_NAME_END,
+    extension: str = FILE_EXT,
 ) -> str:
     """Return saving path with given output path and file name (from url)."""
     parse_url = urlparse(url)
@@ -25,13 +25,13 @@ def collect_path(
         network_path = parse_url._replace(scheme='').geturl()  # noqa: WPS437
     saving_name = re.sub(r'\W', '-', re.sub(r'\/{2}', '', network_path))
     if output == 'dir':
-        if len(saving_name) > MAX_DIR_NAME_LENGTH - len(DIR_NAME_END):
-            saving_name = saving_name[:-len(DIR_NAME_END)]
+        if len(saving_name) > MAX_DIR_LEN - len(DIR_EXT):
+            saving_name = saving_name[:-len(DIR_EXT)]
         return '{0}{1}'.format(
             os.path.join(output_path, saving_name),
-            DIR_NAME_END,
+            DIR_EXT,
         )
-    if len(saving_name) > MAX_FILE_NAME_LENGTH - len(extension):
+    if len(saving_name) > MAX_NAME_LEN - len(extension):
         saving_name = saving_name[:-len(extension)]
     return '{0}{1}'.format(os.path.join(output_path, saving_name), extension)
 

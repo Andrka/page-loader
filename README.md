@@ -10,7 +10,7 @@ Before you start, you will need Python and pip on your computer. To install "Pag
 
 `pip install --user -i https://test.pypi.org/simple andrka-page-loader --extra-index-url https://pypi.org/simple`
 
-[![asciicast](https://asciinema.org/a/MtUvKypZnT88dKENrHl7yg1y5.svg)](https://asciinema.org/a/MtUvKypZnT88dKENrHl7yg1y5)
+[![asciicast](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT.svg)](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT)
 
 #### Start utility:
 
@@ -26,4 +26,4 @@ To start this utility print and run in the terminal:
 
 By default, output path will be the current directory and logging will be full.
 
-[![asciicast](https://asciinema.org/a/WMwzhrK7iakwisDxqMwtXGlhn.svg)](https://asciinema.org/a/WMwzhrK7iakwisDxqMwtXGlhn)
+[![asciicast](https://asciinema.org/a/ziRHTTljmPZzF0O10QpJ1niWh.svg)](https://asciinema.org/a/ziRHTTljmPZzF0O10QpJ1niWh)

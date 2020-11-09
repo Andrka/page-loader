@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
+from progress.bar import Bar
 
 from page_loader import log, values
 
@@ -99,41 +100,45 @@ def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
         logger.debug(exc, exc_info=True)
         logger.error('download error: {0}'.format(exc))
         raise log.KnownError() from exc
-    html_path = values.collect_path(output, url)
+    html_path = values.collect(output, url)
     if not os.path.isdir(output):
         make_dir(output)
     save_html(html_path, load_data)
     logger.info('"{0}" was saved'.format(os.path.basename(html_path)))
     soup = parse_html(html_path)
-    output_dir = values.collect_path(output, url, 'dir')
+    output_dir = values.collect(output, url, 'dir')
     if not os.path.isdir(output_dir):
         make_dir(output_dir)
     resources = soup.find_all(values.is_resource)
     if url[-1] != '/':
         url = '{0}/'.format(url)
-    for resource in resources:
-        resource_url = urljoin(url, resource[values.ATTR])
-        try:
-            load_data = load(resource_url)
-        except requests.RequestException as exc:  # noqa: WPS440
-            logger.warning('"{0}" can`t be downloaded: {1}'.format(
-                resource_url,
-                exc,
-            ))
-            del resource[values.ATTR]  # noqa: WPS420
-        else:
-            resource_path, extension = os.path.splitext(resource[values.ATTR])
-            data_path = values.collect_path(
-                output_dir,
-                resource_path,
-                'file',
-                extension,
-            )
-            save_data(data_path, load_data)
-            logger.info('"{0}" was saved'.format(os.path.basename(data_path)))
-            _, resource_name = os.path.split(data_path)
-            resource[values.ATTR] = os.path.join(
-                os.path.basename(os.path.normpath(output_dir)),
-                resource_name,
-            )
-            save_soup(html_path, soup)
+    bar_level = len(resources)
+    with Bar('Saving resources', max=bar_level) as bar:  # noqa: WPS110
+        for resource in resources:
+            resource_url = urljoin(url, resource[values.ATTR])
+            try:
+                load_data = load(resource_url)
+            except requests.RequestException as exc:  # noqa: WPS440
+                logger.warning('"{0}" can`t be downloaded: {1}'.format(
+                    resource_url,
+                    exc,
+                ))
+                del resource[values.ATTR]  # noqa: WPS420
+            else:
+                resource_path, extension = os.path.splitext(
+                    resource[values.ATTR],
+                )
+                data_path = values.collect(
+                    output_dir,
+                    resource_path,
+                    'file',
+                    extension,
+                )
+                save_data(data_path, load_data)
+                _, resource_name = os.path.split(data_path)
+                resource[values.ATTR] = os.path.join(
+                    os.path.basename(os.path.normpath(output_dir)),
+                    resource_name,
+                )
+                save_soup(html_path, soup)
+            bar.next()  # noqa: B305

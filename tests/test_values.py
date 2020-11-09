@@ -19,10 +19,10 @@ from page_loader import values
     ('/home', 'https://andrka.github.io/page-loader-test/', 'dir', '/home/andrka-github-io-page-loader-test-_files'),
     ('/home', 'https://andrka.github.io/page-loader-test', 'dir', '/home/andrka-github-io-page-loader-test_files'),
 ])
-def test_collect_path(caplog, output_path: str, url: str, output: str, full_path: str):
-    """Test collect_path function."""
+def test_collect(caplog, output_path: str, url: str, output: str, full_path: str):
+    """Test collect function."""
     caplog.set_level(logging.INFO)
-    assert values.collect_path(output_path, url, output) == full_path
+    assert values.collect(output_path, url, output) == full_path
 
 
 @pytest.mark.parametrize('url, expectation', [
