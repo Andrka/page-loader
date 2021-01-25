@@ -50,9 +50,7 @@ ATTR = 'src'
 
 def is_resource(tag) -> bool:
     """Check if given tag in BeautifulSoup object has resource link."""
-    if tag.name in RESOURCES:
-        if tag.has_attr(ATTR):
-            url = urlparse(tag[ATTR])
-            if not url.scheme and not url.netloc and url.path:
-                return True
-    return False
+    if tag.name not in RESOURCES or not tag.has_attr(ATTR):
+        return False
+    url = urlparse(tag[ATTR])
+    return url.path and not url.scheme and not url.netloc
