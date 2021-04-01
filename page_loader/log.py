@@ -6,12 +6,6 @@ import logging
 import sys
 
 
-class KnownError(Exception):
-    """Exception for catching errors."""
-
-    pass  # noqa: WPS420, WPS604
-
-
 class LogFilter(logging.Filter):
     """Filter for logging messages with set level."""
 

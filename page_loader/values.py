@@ -48,8 +48,8 @@ RESOURCES = ('link', 'script', 'img')
 ATTR = 'src'
 
 
-def is_resource(tag) -> bool:
-    """Check if given tag in BeautifulSoup object has resource link."""
+def is_local_asset(tag) -> bool:
+    """Check if given BeautifulSoup tag represents a local asset."""
     if tag.name not in RESOURCES or not tag.has_attr(ATTR):
         return False
     url = urlparse(tag[ATTR])

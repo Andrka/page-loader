@@ -17,7 +17,7 @@ def main():  # noqa: WPS213
         sys.exit(1)
     try:
         files.save(args.output, args.url)
-    except log.KnownError:
+    except files.KnownError:
         sys.exit(1)
     logger.info('"{0}" was downloaded!'.format(args.url))
     sys.exit(0)

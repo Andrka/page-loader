@@ -39,12 +39,12 @@ def test_is_correct(caplog, url: str, expectation: bool):
     assert values.is_correct(url) is expectation
 
 
-def test_is_resource(caplog, soup):
-    """Test is_resource function."""
+def test_is_local_asset(caplog, soup):
+    """Test is_local_asset function."""
     caplog.set_level(logging.INFO)
     tags = soup.find_all()
     resources = 0
     for tag in tags:
-        if values.is_resource(tag):
+        if values.is_local_asset(tag):
             resources += 1
     assert resources == 3

@@ -10,7 +10,11 @@ import requests
 from bs4 import BeautifulSoup
 from progress.bar import Bar
 
-from page_loader import log, values
+from page_loader import values
+
+
+class KnownError(Exception):
+    """Known exception."""
 
 
 def load(url: str):
@@ -37,7 +41,7 @@ def save_html(output: str, load_data):
     except (IOError, OSError) as exc:
         logger.debug(exc, exc_info=True)
         logger.error('saving error: {0}'.format(exc))
-        raise log.KnownError() from exc
+        raise KnownError() from exc
 
 
 def save_data(output: str, load_data):
@@ -53,7 +57,7 @@ def save_data(output: str, load_data):
     except (IOError, OSError) as exc:
         logger.debug(exc, exc_info=True)
         logger.error('saving error: {0}'.format(exc))
-        raise log.KnownError() from exc
+        raise KnownError() from exc
 
 
 def save_soup(output: str, soup):
@@ -69,7 +73,7 @@ def save_soup(output: str, soup):
     except (IOError, OSError) as exc:
         logger.debug(exc, exc_info=True)
         logger.error('saving error: {0}'.format(exc))
-        raise log.KnownError() from exc
+        raise KnownError() from exc
 
 
 def make_dir(path: str):
@@ -84,7 +88,7 @@ def make_dir(path: str):
     except (IOError, OSError) as exc:
         logger.debug(exc, exc_info=True)
         logger.error('saving error: {0}'.format(exc))
-        raise log.KnownError() from exc
+        raise KnownError() from exc
 
 
 def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
@@ -99,7 +103,7 @@ def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
     except requests.RequestException as exc:
         logger.debug(exc, exc_info=True)
         logger.error('download error: {0}'.format(exc))
-        raise log.KnownError() from exc
+        raise KnownError() from exc
     html_path = values.collect(output, url)
     if not os.path.isdir(output):
         make_dir(output)
@@ -109,7 +113,7 @@ def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
     output_dir = values.collect(output, url, 'dir')
     if not os.path.isdir(output_dir):
         make_dir(output_dir)
-    resources = soup.find_all(values.is_resource)
+    resources = soup.find_all(values.is_local_asset)
     if url[-1] != '/':
         url = '{0}/'.format(url)
     bar_level = len(resources)
@@ -142,3 +146,8 @@ def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
                 )
                 save_soup(html_path, soup)
             bar.next()  # noqa: B305
+
+
+def download(url: str, output: str) -> str:
+    """Save requested html file with resources to given path."""
+    pass  # noqa: WPS420
