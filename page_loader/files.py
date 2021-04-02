@@ -17,6 +17,10 @@ class KnownError(Exception):
     """Known exception."""
 
 
+def download(url: str, output: str) -> str:
+    """Save requested html file with resources to given path."""
+
+
 def load(url: str):
     """Downdoad requested url and return Response object."""
     return requests.get(url)
@@ -146,8 +150,3 @@ def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
                 )
                 save_soup(html_path, soup)
             bar.next()  # noqa: B305
-
-
-def download(url: str, output: str) -> str:
-    """Save requested html file with resources to given path."""
-    pass  # noqa: WPS420
