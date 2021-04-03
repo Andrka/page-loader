@@ -95,7 +95,7 @@ def make_dir(path: str):
         raise KnownError() from exc
 
 
-def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
+def save(output: str, url: str) -> str:  # noqa: WPS210, WPS213, WPS231,
     """Save requested html file with resources to given path.
 
     Raises:
@@ -150,3 +150,4 @@ def save(output: str, url: str):  # noqa: WPS210, WPS213, WPS231,
                 )
                 save_soup(html_path, soup)
             bar.next()  # noqa: B305
+    return html_path
