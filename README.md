@@ -23,7 +23,7 @@ To get help with utility after installation, print and run in the terminal:
 
 To start this utility print and run in the terminal:
 
-`page-loader [--output path] [--log {full,errors}] full_url`
+`page-loader [--output path] [--log {notset,debug,info,warning,error}] full_url`
 
 By default, output path will be the current directory and logging will be full.
 

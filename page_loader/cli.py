@@ -8,7 +8,7 @@ import os
 DEFAULT_PATH = os.getcwd()
 
 
-def parse_arguments():
+def get_parser():
     """Return parser of command line arguments."""
     parser = argparse.ArgumentParser(description='Page loader')
     parser.add_argument(
@@ -18,12 +18,15 @@ def parse_arguments():
     )
     parser.add_argument(
         '--log',
-        default='full',
+        default='info',
         choices=[
-            'full',
-            'errors',
+            'notset',
+            'debug',
+            'info',
+            'warning',
+            'error',
         ],
-        help='set logging (default: full)',
+        help='set logging (default: info)',
     )
     parser.add_argument('url', help='set requested web page in full format')
     return parser

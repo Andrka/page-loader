@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-"""Work with text argument values."""
+"""Work with paths and urls values."""
 
 import os
 import re
@@ -10,19 +10,21 @@ MAX_NAME_LEN = 255
 FILE_EXT = '.html'
 MAX_DIR_LEN = 4096
 DIR_EXT = '_files'
+RESOURCES = ('link', 'script', 'img')
+ATTR = 'src'
 
 
-def collect(
+def url_to_path(
     output_path: str,
     url: str,
     output: str = 'file',
     extension: str = FILE_EXT,
 ) -> str:
     """Return saving path with given output path and file name (from url)."""
-    parse_url = urlparse(url)
-    network_path = parse_url.geturl()
-    if parse_url.scheme:
-        network_path = parse_url._replace(scheme='').geturl()  # noqa: WPS437
+    parsing_url = urlparse(url)
+    network_path = parsing_url.geturl()
+    if parsing_url.scheme:
+        network_path = parsing_url._replace(scheme='').geturl()  # noqa: WPS437
     saving_name = re.sub(r'\W', '-', re.sub(r'\/{2}', '', network_path))
     if output == 'dir':
         if len(saving_name) > MAX_DIR_LEN - len(DIR_EXT):
@@ -38,14 +40,10 @@ def collect(
 
 def is_correct(url: str) -> bool:
     """Check correctness of url."""
-    parse_url = urlparse(url)
-    if parse_url.netloc:
+    parsing_url = urlparse(url)
+    if parsing_url.netloc:
         return True
     return False
-
-
-RESOURCES = ('link', 'script', 'img')
-ATTR = 'src'
 
 
 def is_local_asset(tag) -> bool:

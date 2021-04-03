@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-"""Test files module."""
+"""Test engine module."""
 
 import tempfile
 from filecmp import dircmp
@@ -9,7 +9,7 @@ import pytest
 import os
 import sys
 
-from page_loader import files
+from page_loader import engine
 
 TEST_URL = 'https://andrka.github.io/page-loader-test'
 ORIGINAL_HTML_PATH = 'fixtures/original_page.html'
@@ -48,8 +48,8 @@ def test_download():
                         os.path.join(TEST_URL, asset_path),
                         text=asset_content,
                     )
-            # result_path = files.download(TEST_URL, tmpdirname)
-            result_path = files.save(output=tmpdirname, url=TEST_URL)
+            # result_path = engine.download(TEST_URL, tmpdirname)
+            result_path = engine.download_page(output=tmpdirname, url=TEST_URL)
         with open(result_path, 'r') as file:
             result_page = file.read()
         assert result_page == test_page
@@ -74,42 +74,31 @@ def test_download():
 
 # def test_save_html_exception(response):
 #     """Test exception in save_html function."""
-#     with pytest.raises(files.KnownError):
-#         assert files.save_html('/no_permission.html', response)
+#     with pytest.raises(engine.KnownError):
+#         assert engine.save_html('/no_permission.html', response)
 
 
 # def test_save_data_exception(response):
 #     """Test exception in save_data function."""
-#     with pytest.raises(files.KnownError):
-#         assert files.save_data('/no_permission.file', response)
+#     with pytest.raises(engine.KnownError):
+#         assert engine.save_data('/no_permission.file', response)
 
 
 # def test_save_soup_exception(soup):
 #     """Test exception in save_soup function."""
-#     with pytest.raises(files.KnownError):
-#         assert files.save_soup('/no_permission.html', soup)
+#     with pytest.raises(engine.KnownError):
+#         assert engine.save_soup('/no_permission.html', soup)
 
 
 def test_make_dir_exception():
     """Test exception in make_dir function."""
-    with pytest.raises(files.KnownError):
-        assert files.make_dir('/no_permission')
+    with pytest.raises(engine.KnownError):
+        assert engine.make_dir('/no_permission')
 
 
 def test_save_exception():
     """Test exception in save function."""
     url = 'error'
     with tempfile.TemporaryDirectory() as tmpdirname:
-        with pytest.raises(files.KnownError):
-            assert files.save(tmpdirname, url)
-
-
-# def test_save():
-#     """Test save function."""
-#     url = 'https://andrka.github.io/page-loader-test'
-#     with tempfile.TemporaryDirectory() as tmpdirname:
-#         files.save(tmpdirname, url)
-#         compare = dircmp(tmpdirname, 'tests/fixtures')
-#         assert not compare.left_only
-#         assert not compare.right_only
-#         assert not compare.diff_files
+        with pytest.raises(engine.KnownError):
+            assert engine.download_page(tmpdirname, url)

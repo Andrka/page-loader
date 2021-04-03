@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 
-"""Test values module."""
+"""Test path module."""
 
 import pytest
 
-from page_loader import values
+from page_loader import paths
 
 
 @pytest.mark.parametrize('output_path, url, output, full_path', [
@@ -17,12 +17,12 @@ from page_loader import values
     ('/home', 'https://andrka.github.io/page-loader-test/', 'dir', '/home/andrka-github-io-page-loader-test-_files'),
     ('/home', 'https://andrka.github.io/page-loader-test', 'dir', '/home/andrka-github-io-page-loader-test_files'),
 ])
-def test_collect(output_path: str, url: str, output: str, full_path: str):
-    """Test collect function."""
-    assert values.collect(output_path, url, output) == full_path
+def test_url_to_path(output_path: str, url: str, output: str, full_path: str):
+    """Test url_to_path function."""
+    assert paths.url_to_path(output_path, url, output) == full_path
 
 
-@pytest.mark.parametrize('url, expectation', [
+@pytest.mark.parametrize('url, correct_value', [
     ('https://andrka.github.io/page-loader-test/', True),
     ('https://andrka.github.io/page-loader-test', True),
     ('aaa', False),
@@ -30,16 +30,6 @@ def test_collect(output_path: str, url: str, output: str, full_path: str):
     ('andrka.github.io/page-loader-test', False),
     ('https://', False),
 ])
-def test_is_correct(url: str, expectation: bool):
+def test_is_correct(url: str, correct_value: bool):
     """Test is_correct function."""
-    assert values.is_correct(url) is expectation
-
-
-# def test_is_local_asset(soup):
-#     """Test is_local_asset function."""
-#     tags = soup.find_all()
-#     resources = 0
-#     for tag in tags:
-#         if values.is_local_asset(tag):
-#             resources += 1
-#     assert resources == 3
+    assert paths.is_correct(url) is correct_value
