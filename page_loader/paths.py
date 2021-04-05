@@ -4,51 +4,95 @@
 
 import os
 import re
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse, urlsplit
 
-MAX_NAME_LEN = 255
+from bs4 import BeautifulSoup
+
+LINK = 'link'
+HREF = 'href'
+SRC = 'src'
 FILE_EXT = '.html'
-MAX_DIR_LEN = 4096
 DIR_EXT = '_files'
-RESOURCES = ('link', 'script', 'img')
-ATTR = 'src'
+PARSER = 'html.parser'
+FORMATTER = 'html5'
+NON_LETTERS_AND_DIGITS = '[^A-Za-z0-9]+'
+SYMBOL = '-'
 
 
-def url_to_path(
-    output_path: str,
+def collect_file_name(url: str) -> str:
+    """Generate file name from the url."""
+    parse_url = urlsplit(url)
+    url_without_schema = '{0}{1}'.format(parse_url.netloc, parse_url.path)
+    if not parse_url.path:
+        return '{0}{1}'.format(replace_symbols(url_without_schema), FILE_EXT)
+    root, ext = os.path.splitext(url_without_schema)
+    file_name = replace_symbols(root)
+    if not ext:
+        ext = FILE_EXT
+    return '{0}{1}'.format(file_name, ext)
+
+
+def replace_symbols(string: str) -> str:
+    """Replace all characters in string with a hyphen."""
+    return re.sub(NON_LETTERS_AND_DIGITS, SYMBOL, string)
+
+
+def change_links_to_local(  # noqa: WPS210
+    html: str,
     url: str,
-    output: str = 'file',
-    extension: str = FILE_EXT,
+    resources,
 ) -> str:
-    """Return saving path with given output path and file name (from url)."""
-    parsing_url = urlparse(url)
-    network_path = parsing_url.geturl()
-    if parsing_url.scheme:
-        network_path = parsing_url._replace(scheme='').geturl()  # noqa: WPS437
-    saving_name = re.sub(r'\W', '-', re.sub(r'\/{2}', '', network_path))
-    if output == 'dir':
-        if len(saving_name) > MAX_DIR_LEN - len(DIR_EXT):
-            saving_name = saving_name[:-len(DIR_EXT)]
-        return '{0}{1}'.format(
-            os.path.join(output_path, saving_name),
-            DIR_EXT,
-        )
-    if len(saving_name) > MAX_NAME_LEN - len(extension):
-        saving_name = saving_name[:-len(extension)]
-    return '{0}{1}'.format(os.path.join(output_path, saving_name), extension)
+    """Change links to local paths.
+
+    Change in given html resources links to local paths,
+    and return changed html string with list of resources urls.
+
+    """
+    resources_dir = collect_dir_name(url)
+    soup = BeautifulSoup(html, PARSER)
+    tags = soup.find_all(resources)
+    resources_urls = []
+    for tag in tags:
+        link = get_link(tag)
+        if not link:
+            continue
+        if is_local_link(url, link):
+            resources_urls.append(urljoin(url, get_link(tag)))
+            change_tag_link(url, tag, resources_dir)
+    return soup.prettify(formatter=FORMATTER), resources_urls
 
 
-def is_correct(url: str) -> bool:
-    """Check correctness of url."""
-    parsing_url = urlparse(url)
-    if parsing_url.netloc:
+def is_local_link(url: str, link: str) -> bool:
+    """Check if tag has a local link."""
+    parse_url = urlparse(url)
+    parse_link = urlparse(link)
+    if parse_url.netloc == parse_link.netloc:
+        return True
+    if not parse_link.netloc:
         return True
     return False
 
 
-def is_local_asset(tag) -> bool:
-    """Check if given BeautifulSoup tag represents a local asset."""
-    if tag.name not in RESOURCES or not tag.has_attr(ATTR):
-        return False
-    url = urlparse(tag[ATTR])
-    return url.path and not url.scheme and not url.netloc
+def get_link(tag) -> str:
+    """Return a link to resource."""
+    if tag.name == LINK:
+        return tag.get(HREF, '')
+    return tag.get(SRC, '')
+
+
+def collect_dir_name(url: str) -> str:
+    """Generate directory name from the url."""
+    return '{0}{1}'.format(
+        os.path.splitext(collect_file_name(url))[0],
+        DIR_EXT,
+    )
+
+
+def change_tag_link(url: str, tag, resources_dir: str):
+    """Replace tag`s link with a local path."""
+    resource_url = urljoin(url, get_link(tag))
+    new_link = os.path.join(resources_dir, collect_file_name(resource_url))
+    if tag.name == LINK:
+        tag[HREF] = new_link
+    else:
+        tag[SRC] = new_link

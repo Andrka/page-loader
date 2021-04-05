@@ -28,5 +28,8 @@ def get_parser():
         ],
         help='set logging (default: info)',
     )
-    parser.add_argument('url', help='set requested web page in full format')
+    parser.add_argument(
+        'url',
+        help='set requested web page in full format (with schema)',
+    )
     return parser
