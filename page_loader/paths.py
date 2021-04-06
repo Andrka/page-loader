@@ -57,7 +57,12 @@ def change_links_to_local(  # noqa: WPS210
         if not link:
             continue
         if is_local_link(url, link):
-            resources_urls.append(urljoin(url, get_link(tag)))
+            resources_urls.append(
+                urljoin(
+                    url if url.endswith('/') else '{0}/'.format(url),
+                    get_link(tag),
+                ),
+            )
             change_tag_link(url, tag, resources_dir)
     return soup.prettify(formatter=FORMATTER), resources_urls
 

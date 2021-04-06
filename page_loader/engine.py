@@ -25,7 +25,7 @@ def download(url: str, output: str) -> str:  # noqa: WPS210
         KnownError: exception for catching errors in main script.
     """
     logger = logging.getLogger('page_loader')
-    url = normalize_url(url)
+    check_url(url)
     check_dir(output)
     try:
         html_path, resources_urls = save_hltm(output, url)
@@ -48,8 +48,8 @@ def download(url: str, output: str) -> str:  # noqa: WPS210
     return html_path
 
 
-def normalize_url(url: str):
-    """Check if the given url has full format and ends with slash.
+def check_url(url: str):
+    """Check if the given url has full format.
 
     Raises:
         KnownError: exception for catching errors in main script.
@@ -57,9 +57,6 @@ def normalize_url(url: str):
     parsing_url = urlparse(url)
     if not parsing_url.netloc:
         raise KnownError('"{0}": wrong url!'.format(url))
-    if url[-1] != '/':
-        url = '{0}/'.format(url)
-    return url
 
 
 def check_dir(path: str):

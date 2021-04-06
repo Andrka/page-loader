@@ -74,27 +74,14 @@ def test_download_exception():
             engine.download('http://falseurl.falseurl', tmpdirname)
 
 
-@pytest.mark.parametrize('url, result', [
-    ('https://andrka.github.io/page-loader-test/', 'https://andrka.github.io/page-loader-test/'),
-    ('https://andrka.github.io/page-loader-test', 'https://andrka.github.io/page-loader-test/'),
-    ('https://andrka.github.io/page-loader-test/assets/', 'https://andrka.github.io/page-loader-test/assets/'),
-    ('https://andrka.github.io/page-loader-test/assets', 'https://andrka.github.io/page-loader-test/assets/'),
-])
-def test_normalize_url(url: str, result: str):
-    """Test normalize_url function."""
-    assert engine.normalize_url(url) == result
-
-
 @pytest.mark.parametrize('url', [
     ('andrka.github.io/page-loader-test/'),
     ('andrka.github.io/page-loader-test'),
-    ('andrka.github.io/page-loader-test/assets/'),
-    ('andrka.github.io/page-loader-test/assets'),
 ])
-def test_normalize_url_exception(url: str):
-    """Test exception in normalize_url function."""
+def test_check_url_exception(url: str):
+    """Test exception in check_url function."""
     with pytest.raises(engine.KnownError):
-        engine.normalize_url(url)
+        engine.check_url(url)
 
 
 def test_check_dir_existence():
