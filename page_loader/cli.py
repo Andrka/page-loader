@@ -12,6 +12,7 @@ def get_parser():
     """Return parser of command line arguments."""
     parser = argparse.ArgumentParser(description='Page loader')
     parser.add_argument(
+        '-o',
         '--output',
         default=DEFAULT_PATH,
         help='set save location (default: current directory)',
