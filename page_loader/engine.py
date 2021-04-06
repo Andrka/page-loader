@@ -31,7 +31,7 @@ def download(url: str, output: str) -> str:  # noqa: WPS210
         html_path, resources_urls = save_hltm(output, url)
     except requests.exceptions.RequestException as exc:
         raise KnownError() from exc
-    logger.info('"{0}" was saved.'.format(os.path.basename(html_path)))
+    logger.info('Page saved in: "{0}"'.format(html_path))
     if resources_urls:
         create_resources_dir(
             os.path.join(output, paths.collect_dir_name(url)),
