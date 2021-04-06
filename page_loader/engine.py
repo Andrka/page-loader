@@ -44,7 +44,7 @@ def download(url: str, output: str) -> str:  # noqa: WPS210
                 )
                 save_resource(resource_url, download_dir)
                 progress_bar.next()  # noqa: B305
-        logger.info('Page saved in: "{0}"'.format(html_path))
+    logger.info('page saved')
     return html_path
 
 

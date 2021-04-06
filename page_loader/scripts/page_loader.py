@@ -14,7 +14,7 @@ def main():  # noqa: WPS213
     logging.set_logger(args.log)
     logger = logging.logging.getLogger('page_loader')
     try:
-        engine.download(args.url, args.output)
+        print(engine.download(args.url, args.output))  # noqa: WPS421
     except engine.KnownError as exc:
         logger.debug(exc, exc_info=True)
         logger.error('Error: {0}'.format(exc))
