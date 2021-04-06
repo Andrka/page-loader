@@ -19,7 +19,8 @@ def main():  # noqa: WPS213
         logger.debug(exc, exc_info=True)
         logger.error('Error: {0}'.format(exc))
         sys.exit(1)
-    sys.exit(0)
+    else:
+        sys.exit(0)
 
 
 if __name__ == '__main__':
