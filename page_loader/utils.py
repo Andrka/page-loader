@@ -70,12 +70,10 @@ def change_links_to_local(  # noqa: WPS210
 def is_local_link(url: str, link: str) -> bool:
     """Check if tag has a local link."""
     parse_url = urlparse(url)
-    parse_link = urlparse(link)
-    if parse_url.netloc == parse_link.netloc:
-        return True
+    parse_link = urlparse(urljoin(url, link))
     if not parse_link.netloc:
         return True
-    return False
+    return parse_url.netloc == parse_link.netloc
 
 
 def get_link(tag) -> str:

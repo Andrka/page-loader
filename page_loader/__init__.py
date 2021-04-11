@@ -2,6 +2,6 @@
 
 """Load page modules."""
 
-from page_loader.engine import download
+from page_loader.page import download
 
 __all__ = [download]  # noqa: WPS410
