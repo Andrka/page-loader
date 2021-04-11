@@ -1,5 +1,5 @@
 # Page loader
-----
+
 [![Actions Status](https://github.com/Andrka/python-project-lvl3/workflows/hexlet-check/badge.svg)](https://github.com/Andrka/python-project-lvl3/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/0f10d4df5001658af2bd/maintainability)](https://codeclimate.com/github/Andrka/python-project-lvl3/maintainability) <a href="https://codeclimate.com/github/Andrka/python-project-lvl3/test_coverage"><img src="https://api.codeclimate.com/v1/badges/0f10d4df5001658af2bd/test_coverage" /></a> [![Github Actions Status](https://github.com/Andrka/python-project-lvl3/workflows/Python%20CI/badge.svg)](https://github.com/Andrka/python-project-lvl3/actions)
 
@@ -12,7 +12,7 @@ pip install --user -i https://test.pypi.org/simple andrka-page-loader --extra-in
 [![asciicast](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT.svg)](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT)
 ## Usage
 ```bash
-page-loader [--output path] full_url_with_schema
+page-loader [-h] [--output path] full_url_with_schema
 ```
 By default, output path is the current directory.
 ## A Simple Example
