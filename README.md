@@ -11,10 +11,22 @@ pip install --user -i https://test.pypi.org/simple andrka-page-loader --extra-in
 ```
 [![asciicast](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT.svg)](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT)
 ## Usage
+As a script:
 ```bash
 page-loader [-h] [--output path] full_url_with_schema
+# By default, output path is the current directory
+
+page-loader --output /tmp https://andrka.github.io/page-loader-test/
+/tmp/andrka-github-io-page-loader-test-.html # saved file`s path
 ```
-By default, output path is the current directory.
+
+As a library:
+```python
+from page_loader import download
+
+file_path = download('https://andrka.github.io/page-loader-test/', '/tmp')
+print(file_path)  # => '/tmp/andrka-github-io-page-loader-test-.html'
+```
 ## A Simple Example
 [![asciicast](https://asciinema.org/a/ziRHTTljmPZzF0O10QpJ1niWh.svg)](https://asciinema.org/a/ziRHTTljmPZzF0O10QpJ1niWh)
 ## Contributing
