@@ -7,9 +7,8 @@ import os
 from urllib.parse import urlparse
 
 import requests
-from progress.bar import Bar
-
 from page_loader import utils
+from progress.bar import Bar
 
 RESOURCES = ('link', 'script', 'img')
 

@@ -7,7 +7,6 @@ import logging
 import sys
 
 import requests
-
 from page_loader import cli, page
 
 FORMAT = '%(levelname)s - %(asctime)s - %(message)s'  # noqa: WPS323

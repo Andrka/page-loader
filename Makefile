@@ -26,3 +26,6 @@ check: selfcheck lint test
 
 report:
 	poetry run coverage report
+
+isort:
+	poetry run isort page_loader tests
