@@ -5,7 +5,6 @@
 import os
 import sys
 import tempfile
-from filecmp import dircmp
 from urllib.parse import urljoin
 
 import pytest
@@ -50,7 +49,6 @@ def open_fixture(path: str):
 
 
 def test_download(requests_mock):
-    """Test download function."""
     test_page = open_file(os.path.join(
         sys.path[0],
         collect_fixture_path(TEST_HTML),
@@ -76,67 +74,79 @@ def test_download(requests_mock):
             EXPECTED_HTML_PATH,
         ))
         assert result_page == expected_page
-        expected_difference = dircmp(
-            tmpdirname,
+        result_dir_entry = sorted(os.listdir(tmpdirname))
+        expected_dir_entry = sorted(os.listdir(
             os.path.join(sys.path[0], EXPECTED_PATH),
-        )
-        assert not expected_difference.left_only
-        assert not expected_difference.right_only
-        assert not expected_difference.diff_files
-        expected_assets_difference = dircmp(
-            os.path.join(tmpdirname, EXPECTED_ASSETS_DIR),
-            os.path.join(
+        ))
+        assert result_dir_entry == expected_dir_entry
+        result_assets_dir = [entry.name for entry in os.scandir(
+            tmpdirname,
+        ) if entry.is_dir()][0]
+        result_assets_entry = sorted(os.listdir(os.path.join(
+            tmpdirname,
+            result_assets_dir,
+        )))
+        expected_assets_entry = sorted(os.listdir(os.path.join(
+            sys.path[0],
+            EXPECTED_PATH,
+            EXPECTED_ASSETS_DIR,
+        )))
+        assert result_assets_entry == expected_assets_entry
+        for entry in result_assets_entry:
+            result_asset = open_fixture(os.path.join(
+                tmpdirname,
+                result_assets_dir,
+                entry,
+            ))
+            expected_asset = open_fixture(os.path.join(
                 sys.path[0],
-                os.path.join(EXPECTED_PATH, EXPECTED_ASSETS_DIR),
-            ),
-        )
-        assert not expected_assets_difference.left_only
-        assert not expected_assets_difference.right_only
-        assert not expected_assets_difference.diff_files
+                EXPECTED_PATH,
+                EXPECTED_ASSETS_DIR,
+                entry,
+            ))
+            assert result_asset == expected_asset
 
 
 @pytest.mark.parametrize('status_code', [
-    '400', '401', '403', '404', '500', '502',
+    400, 401, 403, 404, 500, 502,
 ])
-def get_data_exception(requests_mock, status_code):
-    """Test exception in get_data function."""
+def test_get_data_exceptions(requests_mock, status_code):
     requests_mock.get(TEST_URL, text='', status_code=status_code)
     with pytest.raises(requests.HTTPError):
         with tempfile.TemporaryDirectory() as tmpdirname:
             page.download(TEST_URL, tmpdirname)
 
 
-@pytest.mark.parametrize('url', [
-    ('andrka.github.io/page-loader-test/'),
-    ('andrka.github.io/page-loader-test'),
+@pytest.mark.parametrize('url, dir, subdir, file, rights, exception', [
+    ('page-loader.test', '', '', '', 0o775, requests.exceptions.MissingSchema),
+    ('https://page-loader.test/', 'dir', '', '', 0o775, FileNotFoundError),
+    ('https://page-loader.test/', '', '', '', 0o444, PermissionError),
+    ('https://page-loader.test/', '', '', 'file', 0o775, NotADirectoryError),
+    ('https://page-loader.test/', '', 'subdir', '', 0o775, OSError),
 ])
-def test_check_url_exception(url: str):
-    """Test exception in check_url function."""
-    with pytest.raises(requests.exceptions.MissingSchema):
-        page.check_url(url)
-
-
-def test_check_dir_existence():
-    """Test dir for existence with check_dir function."""
+def test_download_exceptions(
+    requests_mock,
+    url: str,
+    dir: str,
+    subdir: str,
+    file: str,
+    rights,
+    exception,
+):
     with tempfile.TemporaryDirectory() as tmpdirname:
-        with pytest.raises(FileNotFoundError):
-            page.check_dir('{0}/false'.format(tmpdirname))
-
-
-def test_create_resources_dir_rights():
-    """Test for access rights with create_resources_dir function."""
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        path = '{0}/test'.format(tmpdirname)
-        os.chmod(tmpdirname, 0o444)
-        with pytest.raises(PermissionError):
-            page.create_resources_dir(path)
+        requests_mock.get(
+            url,
+            text='<script src="page-loader-test-_files/test">',
+        )
+        os.chmod(tmpdirname, rights)
+        if subdir:
+            os.makedirs(os.path.join(
+                tmpdirname,
+                EXPECTED_ASSETS_DIR,
+                subdir,
+            ))
+        if file:
+            open(os.path.join(tmpdirname, file), 'a').close()
+        with pytest.raises(exception):
+            page.download(url, os.path.join(tmpdirname, dir, file))
         os.chmod(tmpdirname, 0o775)
-
-
-def test_create_resources_dir_empty():
-    """Test for empty dir with create_resources_dir function."""
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        path = '{0}/test'.format(tmpdirname)
-        os.mkdir(path)
-        with pytest.raises(OSError):
-            page.create_resources_dir(tmpdirname)

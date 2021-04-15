@@ -4,7 +4,6 @@
 
 import logging
 import os
-from urllib.parse import urlparse
 
 import requests
 from page_loader import utils
@@ -16,8 +15,6 @@ RESOURCES = ('link', 'script', 'img')
 def download(url: str, output: str) -> str:  # noqa: WPS210
     """Save requested html file with resources to given path."""
     logger = logging.getLogger('page_loader')
-    check_url(url)
-    check_dir(output)
     html_path, resources_urls = save_hltm(output, url)
     logger.info('"{0}" was downloaded'.format(url))
     if resources_urls:
@@ -34,31 +31,6 @@ def download(url: str, output: str) -> str:  # noqa: WPS210
                 progress_bar.next()  # noqa: B305
     logger.info('page saved')
     return html_path
-
-
-def check_url(url: str):
-    """Check if the given url has full format.
-
-    Raises:
-        MissingSchema: url without schema.
-    """
-    parsing_url = urlparse(url)
-    if not parsing_url.netloc:
-        raise requests.exceptions.MissingSchema(
-            '"{0}": wrong url!'.format(url),
-        )
-
-
-def check_dir(path: str):
-    """Check if the given directory exists and has writing rights.
-
-    Raises:
-        FileNotFoundError: directory not exists.
-    """
-    if not os.path.exists(path):
-        raise FileNotFoundError(
-            '"{0}": directory does not exist!'.format(path),
-        )
 
 
 def create_resources_dir(path: str):
@@ -92,7 +64,6 @@ def save_hltm(output_dir_path: str, url: str):
 
 
 def write_to_file(path, dataset):
-    """Write data to file."""
     if isinstance(dataset, bytes):
         with open(path, 'wb') as byte_file:
             byte_file.write(dataset)
@@ -102,14 +73,12 @@ def write_to_file(path, dataset):
 
 
 def get_data(url: str):
-    """Parse data from the url."""
     request = requests.get(url)
     request.raise_for_status()
     return request.content
 
 
 def save_resource(url: str, download_dir: str):
-    """Download and save resource."""
     logger = logging.getLogger('page_loader')
     file_path = os.path.join(download_dir, utils.collect_file_name(url))
     try:
