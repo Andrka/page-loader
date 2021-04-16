@@ -19,7 +19,7 @@ TEST_ASSETS = (
 )
 BYTES_EXT = ('.png', )
 TEST_HTML = 'test.html'
-HTML_EXT = os.path.splitext(TEST_HTML)[1]
+_, HTML_EXT = os.path.splitext(TEST_HTML)
 FIXTURES_DIR = 'fixtures/'
 FIXTURES_ASSETS_DIR = 'fixtures/assets/'
 EXPECTED_PATH = 'fixtures/expected/'
@@ -30,19 +30,19 @@ EXPECTED_HTML_PATH = os.path.join(EXPECTED_PATH, EXPECTED_HTML_NAME)
 
 def collect_fixture_path(asset: str) -> str:
     file_name = os.path.basename(asset)
-    file_ext = os.path.splitext(file_name)[1]
+    _, file_ext = os.path.splitext(file_name)
     if file_ext == HTML_EXT:
         return os.path.join(FIXTURES_DIR, file_name)
     return os.path.join(FIXTURES_ASSETS_DIR, file_name)
 
 
-def open_file(path: str, mode: str = 'r') -> str:
+def open_file(path: str, mode: str = 'r'):
     with open(path, mode) as file:
         return file.read()
 
 
 def open_fixture(path: str):
-    file_ext = os.path.splitext(path)[1]
+    _, file_ext = os.path.splitext(path)
     if file_ext in BYTES_EXT:
         return open_file(path, 'rb')
     return open_file(path)
@@ -117,18 +117,16 @@ def test_get_data_exceptions(requests_mock, status_code):
             page.download(TEST_URL, tmpdirname)
 
 
-@pytest.mark.parametrize('url, dir, subdir, file, rights, exception', [
-    ('page-loader.test', '', '', '', 0o775, requests.exceptions.MissingSchema),
-    ('https://page-loader.test/', 'dir', '', '', 0o775, FileNotFoundError),
-    ('https://page-loader.test/', '', '', '', 0o444, PermissionError),
-    ('https://page-loader.test/', '', '', 'file', 0o775, NotADirectoryError),
-    ('https://page-loader.test/', '', 'subdir', '', 0o775, OSError),
+@pytest.mark.parametrize('url, dir, file, rights, exception', [
+    ('page-loader.test', '', '', 0o775, requests.exceptions.MissingSchema),
+    ('https://page-loader.test/', 'dir', '', 0o775, FileNotFoundError),
+    ('https://page-loader.test/', '', '', 0o444, PermissionError),
+    ('https://page-loader.test/', '', 'file', 0o775, NotADirectoryError),
 ])
 def test_download_exceptions(
     requests_mock,
     url: str,
     dir: str,
-    subdir: str,
     file: str,
     rights,
     exception,
@@ -139,12 +137,6 @@ def test_download_exceptions(
             text='<script src="page-loader-test-_files/test">',
         )
         os.chmod(tmpdirname, rights)
-        if subdir:
-            os.makedirs(os.path.join(
-                tmpdirname,
-                EXPECTED_ASSETS_DIR,
-                subdir,
-            ))
         if file:
             open(os.path.join(tmpdirname, file), 'a').close()
         with pytest.raises(exception):

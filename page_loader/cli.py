@@ -11,7 +11,7 @@ DEFAULT_PATH = os.getcwd()
 def get_args():
     """Return command line arguments."""
     parser = argparse.ArgumentParser(description="""'Page loader' is a written
-    in Python utility, which downloads requested web page with local
+    in Python utility which downloads requested web page with local
      resources.""")
     parser.add_argument(
         '-o',
