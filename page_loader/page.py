@@ -17,13 +17,14 @@ SRC = 'src'
 RESOURCES = (LINK, 'script', 'img')
 PARSER = 'html.parser'
 FORMATTER = 'html5'
+DIR_EXT = '_files'
 
 
 def download(url: str, output: str) -> str:
     """Save requested html file with resources to given path."""
     logger = logging.getLogger('page_loader')
     html = get_data(url)
-    html_path = os.path.join(output, utils.collect_file_name(url))
+    html_path = os.path.join(output, utils.build_name(url))
     local_html, resources_urls = change_links_to_local(
         html,
         url,
@@ -32,7 +33,10 @@ def download(url: str, output: str) -> str:
     write_to_file(html_path, local_html, 'w')
     logger.info('"{0}" was downloaded'.format(url))
     if resources_urls:
-        resources_dir_path = os.path.join(output, utils.collect_dir_name(url))
+        resources_dir_path = os.path.join(
+            output,
+            utils.build_name(url, DIR_EXT),
+        )
         make_dir(resources_dir_path)
         download_resources(resources_dir_path, resources_urls)
     logger.info('page saved')
@@ -53,15 +57,15 @@ def get_data(url: str):
 
 
 def change_links_to_local(html: str, url: str, resources):
-    resources_dir = utils.collect_dir_name(url)
+    resources_dir = utils.build_name(url, DIR_EXT)
     soup = BeautifulSoup(html, PARSER)
     tags = soup.find_all(resources)
     resources_urls = []
     for tag in tags:
-        link = get_link(tag)
-        if not link:
+        tag_link = get_link(tag)
+        if not tag_link:
             continue
-        if utils.is_local_link(url, link):
+        if utils.is_same_netloc(url, tag_link):
             resources_urls.append(
                 urljoin(
                     url if url.endswith('/') else '{0}/'.format(url),
@@ -83,7 +87,7 @@ def change_tag_link(url: str, tag, resources_dir: str):
     resource_url = urljoin(url, get_link(tag))
     new_link = os.path.join(
         resources_dir,
-        utils.collect_file_name(resource_url),
+        utils.build_name(resource_url),
     )
     if tag.name == LINK:
         tag[HREF] = new_link
@@ -102,7 +106,7 @@ def make_dir(path: str):
 
 
 def save_resource(url: str, download_dir: str):
-    file_path = os.path.join(download_dir, utils.collect_file_name(url))
+    file_path = os.path.join(download_dir, utils.build_name(url))
     dataset = get_data(url)
     mode = 'wb' if isinstance(dataset, bytes) else 'w'
     write_to_file(file_path, dataset, mode)

@@ -6,7 +6,6 @@
 import logging
 import sys
 
-import requests
 from page_loader import cli, page
 
 FORMAT = '%(levelname)s - %(asctime)s - %(message)s'
@@ -19,13 +18,7 @@ def main():
     args = cli.get_args()
     try:
         print(page.download(args.url, args.output))
-    except (
-        requests.exceptions.MissingSchema,
-        FileNotFoundError,
-        PermissionError,
-        OSError,
-        requests.HTTPError,
-    ) as exc:
+    except Exception as exc:
         logger.error('Error: {0}'.format(exc))
         sys.exit(1)
 

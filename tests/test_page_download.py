@@ -3,13 +3,14 @@
 """Test page download."""
 
 import os
+import pathlib
 import sys
 import tempfile
 from urllib.parse import urljoin
 
 import pytest
 import requests
-from page_loader import page, utils
+from page_loader import page
 
 TEST_URL = 'https://page-loader.test/'
 TEST_ASSETS = (
@@ -17,94 +18,86 @@ TEST_ASSETS = (
     'assets/src/index.js',
     'assets/styles/app.css',
 )
-BYTES_EXT = ('.png', )
 TEST_HTML = 'test.html'
-_, HTML_EXT = os.path.splitext(TEST_HTML)
 FIXTURES_DIR = 'fixtures/'
-FIXTURES_ASSETS_DIR = 'fixtures/assets/'
+FIXTURES_ASSETS_DIR = 'assets/'
 EXPECTED_PATH = 'fixtures/expected/'
-EXPECTED_ASSETS_DIR = utils.collect_dir_name(TEST_URL)
-EXPECTED_HTML_NAME = utils.collect_file_name(TEST_URL)
+EXPECTED_ASSETS_DIR = 'page-loader-test-_files'
+EXPECTED_HTML_NAME = 'page-loader-test-.html'
 EXPECTED_HTML_PATH = os.path.join(EXPECTED_PATH, EXPECTED_HTML_NAME)
 
 
-def collect_fixture_path(asset: str) -> str:
+def build_fixure_path(asset: str, asset_dir: str = '') -> str:
     file_name = os.path.basename(asset)
-    _, file_ext = os.path.splitext(file_name)
-    if file_ext == HTML_EXT:
-        return os.path.join(FIXTURES_DIR, file_name)
-    return os.path.join(FIXTURES_ASSETS_DIR, file_name)
+    return build_absolute_path(
+        FIXTURES_DIR,
+        asset_dir,
+        file_name,
+    )
 
 
-def open_file(path: str, mode: str = 'r'):
+def build_absolute_path(*args) -> str:
+    return os.path.join(
+        pathlib.Path(__file__).parent.absolute(),
+        *args,
+    )
+
+
+def open_file(path: str, mode: str = 'rb'):
     with open(path, mode) as file:
         return file.read()
 
 
-def open_fixture(path: str):
-    _, file_ext = os.path.splitext(path)
-    if file_ext in BYTES_EXT:
-        return open_file(path, 'rb')
-    return open_file(path)
-
-
 def test_download(requests_mock):
-    test_page = open_file(os.path.join(
-        sys.path[0],
-        collect_fixture_path(TEST_HTML),
-    ))
+    test_page = open_file(build_fixure_path(TEST_HTML), 'r')
     requests_mock.get(TEST_URL, text=test_page)
     for asset_relative_path in TEST_ASSETS:
-        fixture_relative_path = collect_fixture_path(asset_relative_path)
-        fixture_path = os.path.join(sys.path[0], fixture_relative_path)
-        fixture_file = open_fixture(fixture_path)
-        content_file = fixture_file.encode('utf-8') if isinstance(
-            fixture_file,
-            str,
-        ) else fixture_file
+        fixture_path = build_fixure_path(
+            asset_relative_path,
+            FIXTURES_ASSETS_DIR,
+        )
+        fixture_file = open_file(fixture_path)
         requests_mock.get(
             urljoin(TEST_URL, asset_relative_path),
-            content=content_file,
+            content=fixture_file,
         )
     with tempfile.TemporaryDirectory() as tmpdirname:
-        result_path = page.download(TEST_URL, tmpdirname)
-        result_page = open_file(result_path)
-        expected_page = open_file(os.path.join(
-            sys.path[0],
-            EXPECTED_HTML_PATH,
-        ))
-        assert result_page == expected_page
-        result_dir_entry = sorted(os.listdir(tmpdirname))
-        expected_dir_entry = sorted(os.listdir(
-            os.path.join(sys.path[0], EXPECTED_PATH),
-        ))
-        assert result_dir_entry == expected_dir_entry
-        result_assets_dir = [entry.name for entry in os.scandir(
+        html_path = page.download(TEST_URL, tmpdirname)
+        html_content = open_file(html_path, 'r')
+        expected_page = open_file(
+            build_absolute_path(EXPECTED_HTML_PATH),
+            'r',
+        )
+        assert html_content == expected_page
+        output_html_name = [entry.name for entry in os.scandir(
+            tmpdirname,
+        ) if entry.is_file()][0]
+        assert output_html_name == EXPECTED_HTML_NAME
+        output_assets_dir = [entry.name for entry in os.scandir(
             tmpdirname,
         ) if entry.is_dir()][0]
-        result_assets_entry = sorted(os.listdir(os.path.join(
+        output_assets_files = sorted(os.listdir(os.path.join(
             tmpdirname,
-            result_assets_dir,
+            output_assets_dir,
         )))
-        expected_assets_entry = sorted(os.listdir(os.path.join(
-            sys.path[0],
+        expected_assets_files = sorted(os.listdir(build_absolute_path(
             EXPECTED_PATH,
             EXPECTED_ASSETS_DIR,
         )))
-        assert result_assets_entry == expected_assets_entry
-        for entry in result_assets_entry:
-            result_asset = open_fixture(os.path.join(
+        assert output_assets_files == expected_assets_files
+        for output_assets_file in output_assets_files:
+            output_asset = open_file(os.path.join(
                 tmpdirname,
-                result_assets_dir,
-                entry,
+                output_assets_dir,
+                output_assets_file,
             ))
-            expected_asset = open_fixture(os.path.join(
+            expected_asset = open_file(os.path.join(
                 sys.path[0],
                 EXPECTED_PATH,
                 EXPECTED_ASSETS_DIR,
-                entry,
+                output_assets_file,
             ))
-            assert result_asset == expected_asset
+            assert output_asset == expected_asset
 
 
 @pytest.mark.parametrize('status_code', [
