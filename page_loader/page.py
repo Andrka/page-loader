@@ -11,10 +11,11 @@ from bs4 import BeautifulSoup
 from page_loader import utils
 from progress.bar import Bar
 
-LINK = 'link'
-HREF = 'href'
-SRC = 'src'
-RESOURCES = (LINK, 'script', 'img')
+TAG_TO_ATTRIBUTE_MAPPING = {
+    'script': 'src',
+    'link': 'href',
+    'img': 'src',
+}
 PARSER = 'html.parser'
 FORMATTER = 'html5'
 DIR_EXT = '_files'
@@ -25,10 +26,14 @@ def download(url: str, output: str) -> str:
     logger = logging.getLogger('page_loader')
     html = get_data(url)
     html_path = os.path.join(output, utils.build_name(url))
-    local_html, resources_urls = change_links_to_local(
+    resources_dir = utils.build_name(url, DIR_EXT)
+    resources_urls = []
+    local_html = prepare_resources(
         html,
         url,
-        RESOURCES,
+        TAG_TO_ATTRIBUTE_MAPPING.keys(),
+        resources_dir,
+        resources_urls,
     )
     write_to_file(html_path, local_html, 'w')
     logger.info('"{0}" was downloaded'.format(url))
@@ -44,9 +49,17 @@ def download(url: str, output: str) -> str:
 
 
 def download_resources(download_dir, resources_urls):
-    with Bar('Saving resources', max=len(resources_urls)) as progress_bar:
-        for resource_url in resources_urls:
-            save_resource(resource_url, download_dir)
+    for resource_url in resources_urls:
+        file_path = os.path.join(
+            download_dir,
+            utils.build_name(resource_url),
+        )
+        content = get_data(resource_url)
+        with Bar(
+            'Saving "{0}"'.format(resource_url),
+            max=len(content) / 1024,
+        ) as progress_bar:
+            write_to_file(file_path, content)
             progress_bar.next()
 
 
@@ -56,57 +69,44 @@ def get_data(url: str):
     return request.content
 
 
-def change_links_to_local(html: str, url: str, resources):
-    resources_dir = utils.build_name(url, DIR_EXT)
+def prepare_resources(
+    html: str,
+    url: str,
+    resources,
+    resources_dir,
+    resources_urls,
+):
     soup = BeautifulSoup(html, PARSER)
     tags = soup.find_all(resources)
-    resources_urls = []
     for tag in tags:
-        tag_link = get_link(tag)
+        attribute = TAG_TO_ATTRIBUTE_MAPPING[tag.name]
+        tag_link = tag.get(attribute, '')
         if not tag_link:
             continue
         if utils.is_same_netloc(url, tag_link):
             resources_urls.append(
                 urljoin(
-                    url if url.endswith('/') else '{0}/'.format(url),
-                    get_link(tag),
+                    '{0}/'.format(url),
+                    tag_link,
                 ),
             )
-            change_tag_link(url, tag, resources_dir)
-    return soup.prettify(formatter=FORMATTER), resources_urls
+            resource_url = urljoin(
+                url,
+                tag.get(attribute, ''),
+            )
+            new_link = os.path.join(
+                resources_dir,
+                utils.build_name(resource_url),
+            )
+            tag[attribute] = new_link
+    return soup.prettify(formatter=FORMATTER)
 
 
-def get_link(tag) -> str:
-    if tag.name == LINK:
-        return tag.get(HREF, '')
-    return tag.get(SRC, '')
-
-
-def change_tag_link(url: str, tag, resources_dir: str):
-    """Replace tag`s link with a local path."""
-    resource_url = urljoin(url, get_link(tag))
-    new_link = os.path.join(
-        resources_dir,
-        utils.build_name(resource_url),
-    )
-    if tag.name == LINK:
-        tag[HREF] = new_link
-    else:
-        tag[SRC] = new_link
-
-
-def write_to_file(path: str, dataset, mode: str):
+def write_to_file(path: str, content, mode: str = 'wb'):
     with open(path, mode) as data_file:
-        data_file.write(dataset)
+        data_file.write(content)
 
 
 def make_dir(path: str):
     if not os.path.exists(path):
         os.mkdir(path)
-
-
-def save_resource(url: str, download_dir: str):
-    file_path = os.path.join(download_dir, utils.build_name(url))
-    dataset = get_data(url)
-    mode = 'wb' if isinstance(dataset, bytes) else 'w'
-    write_to_file(file_path, dataset, mode)

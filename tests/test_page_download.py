@@ -49,33 +49,28 @@ def open_file(path: str, mode: str = 'rb'):
 
 
 def test_download(requests_mock):
-    test_page = open_file(build_fixure_path(TEST_HTML), 'r')
-    requests_mock.get(TEST_URL, text=test_page)
+    test_html = open_file(build_fixure_path(TEST_HTML), 'r')
+    requests_mock.get(TEST_URL, text=test_html)
     for asset_relative_path in TEST_ASSETS:
         fixture_path = build_fixure_path(
             asset_relative_path,
             FIXTURES_ASSETS_DIR,
         )
-        fixture_file = open_file(fixture_path)
+        fixture_content = open_file(fixture_path)
         requests_mock.get(
             urljoin(TEST_URL, asset_relative_path),
-            content=fixture_file,
+            content=fixture_content,
         )
     with tempfile.TemporaryDirectory() as tmpdirname:
         html_path = page.download(TEST_URL, tmpdirname)
         html_content = open_file(html_path, 'r')
-        expected_page = open_file(
+        expected_html = open_file(
             build_absolute_path(EXPECTED_HTML_PATH),
             'r',
         )
-        assert html_content == expected_page
-        output_html_name = [entry.name for entry in os.scandir(
-            tmpdirname,
-        ) if entry.is_file()][0]
+        assert html_content == expected_html
+        output_html_name, output_assets_dir = sorted(os.listdir(tmpdirname))
         assert output_html_name == EXPECTED_HTML_NAME
-        output_assets_dir = [entry.name for entry in os.scandir(
-            tmpdirname,
-        ) if entry.is_dir()][0]
         output_assets_files = sorted(os.listdir(os.path.join(
             tmpdirname,
             output_assets_dir,
@@ -86,18 +81,18 @@ def test_download(requests_mock):
         )))
         assert output_assets_files == expected_assets_files
         for output_assets_file in output_assets_files:
-            output_asset = open_file(os.path.join(
+            output_content = open_file(os.path.join(
                 tmpdirname,
                 output_assets_dir,
                 output_assets_file,
             ))
-            expected_asset = open_file(os.path.join(
+            expected_content = open_file(os.path.join(
                 sys.path[0],
                 EXPECTED_PATH,
                 EXPECTED_ASSETS_DIR,
                 output_assets_file,
             ))
-            assert output_asset == expected_asset
+            assert output_content == expected_content
 
 
 @pytest.mark.parametrize('status_code', [
