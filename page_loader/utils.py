@@ -8,18 +8,18 @@ from urllib.parse import urljoin, urlparse
 
 REPLACEMENT_PATTERN = '[^A-Za-z0-9]+'
 REPLACER = '-'
-FILE_EXT = '.html'
+HTML_FILE_EXT = '.html'
 
 
 def build_name(
     url: str,
-    postfix: str = FILE_EXT,
+    postfix: str = HTML_FILE_EXT,
     replacement_pattern: str = REPLACEMENT_PATTERN,
     replacer: str = REPLACER,
 ) -> str:
     """Build file or dir name from the url."""
-    parse_url = urlparse(url)
-    url_without_schema = '{0}{1}'.format(parse_url.netloc, parse_url.path)
+    parsed_url = urlparse(url)
+    url_without_schema = '{0}{1}'.format(parsed_url.netloc, parsed_url.path)
     root, ext = os.path.splitext(url_without_schema)
     changed_name = re.sub(replacement_pattern, replacer, root)
     return '{0}{1}'.format(changed_name, ext if ext else postfix)
@@ -27,8 +27,8 @@ def build_name(
 
 def is_same_netloc(url: str, tag_link: str) -> bool:
     """Check if url and tag link have same netloc."""
-    parse_url = urlparse(url)
-    parse_link = urlparse(urljoin(url, tag_link))
-    if not parse_link.netloc:
+    parsed_url = urlparse(url)
+    parsed_link = urlparse(urljoin(url, tag_link))
+    if not parsed_link.netloc:
         return True
-    return parse_url.netloc == parse_link.netloc
+    return parsed_url.netloc == parsed_link.netloc

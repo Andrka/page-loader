@@ -4,6 +4,7 @@
 
 import os
 import pathlib
+import stat
 import sys
 import tempfile
 from urllib.parse import urljoin
@@ -13,6 +14,7 @@ import requests
 from page_loader import page
 
 TEST_URL = 'https://page-loader.test/'
+WRONG_TEST_URL = 'page-loader.test'
 TEST_ASSETS = (
     'assets/src/download.png',
     'assets/src/index.js',
@@ -25,6 +27,8 @@ EXPECTED_PATH = 'fixtures/expected/'
 EXPECTED_ASSETS_DIR = 'page-loader-test-_files'
 EXPECTED_HTML_NAME = 'page-loader-test-.html'
 EXPECTED_HTML_PATH = os.path.join(EXPECTED_PATH, EXPECTED_HTML_NAME)
+ALLOWED_FILE_PERMISSION_CODE = stat.S_IRWXU
+DENIED_FILE_PERMISSION_CODE = stat.UF_IMMUTABLE
 
 
 def build_fixure_path(asset: str, asset_dir: str = '') -> str:
@@ -106,10 +110,16 @@ def test_get_data_exceptions(requests_mock, status_code):
 
 
 @pytest.mark.parametrize('url, dir, file, rights, exception', [
-    ('page-loader.test', '', '', 0o775, requests.exceptions.MissingSchema),
-    ('https://page-loader.test/', 'dir', '', 0o775, FileNotFoundError),
-    ('https://page-loader.test/', '', '', 0o444, PermissionError),
-    ('https://page-loader.test/', '', 'file', 0o775, NotADirectoryError),
+    (
+        WRONG_TEST_URL,
+        '',
+        '',
+        ALLOWED_FILE_PERMISSION_CODE,
+        requests.exceptions.MissingSchema,
+    ),
+    (TEST_URL, 'dir', '', ALLOWED_FILE_PERMISSION_CODE, FileNotFoundError),
+    (TEST_URL, '', '', DENIED_FILE_PERMISSION_CODE, PermissionError),
+    (TEST_URL, '', 'file', ALLOWED_FILE_PERMISSION_CODE, NotADirectoryError),
 ])
 def test_download_exceptions(
     requests_mock,
@@ -129,4 +139,4 @@ def test_download_exceptions(
             open(os.path.join(tmpdirname, file), 'a').close()
         with pytest.raises(exception):
             page.download(url, os.path.join(tmpdirname, dir, file))
-        os.chmod(tmpdirname, 0o775)
+        os.chmod(tmpdirname, ALLOWED_FILE_PERMISSION_CODE)

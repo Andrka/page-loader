@@ -24,18 +24,15 @@ DIR_EXT = '_files'
 def download(url: str, output: str) -> str:
     """Save requested html file with resources to given path."""
     logger = logging.getLogger('page_loader')
-    html = get_data(url)
+    html_content = get_data(url)
     html_path = os.path.join(output, utils.build_name(url))
     resources_dir = utils.build_name(url, DIR_EXT)
-    resources_urls = []
-    local_html = prepare_resources(
-        html,
+    html, resources_urls = prepare_resources(
+        html_content,
         url,
-        TAG_TO_ATTRIBUTE_MAPPING.keys(),
         resources_dir,
-        resources_urls,
     )
-    write_to_file(html_path, local_html, 'w')
+    write_to_file(html_path, html, 'w')
     logger.info('"{0}" was downloaded'.format(url))
     if resources_urls:
         resources_dir_path = os.path.join(
@@ -48,11 +45,11 @@ def download(url: str, output: str) -> str:
     return html_path
 
 
-def download_resources(download_dir, resources_urls):
-    for resource_url in resources_urls:
+def download_resources(download_dir: str, resources_urls: dict):
+    for resource_name, resource_url in resources_urls.items():
         file_path = os.path.join(
             download_dir,
-            utils.build_name(resource_url),
+            resource_name,
         )
         content = get_data(resource_url)
         with Bar(
@@ -72,34 +69,30 @@ def get_data(url: str):
 def prepare_resources(
     html: str,
     url: str,
-    resources,
     resources_dir,
-    resources_urls,
+    resources: str = TAG_TO_ATTRIBUTE_MAPPING.keys(),
 ):
     soup = BeautifulSoup(html, PARSER)
     tags = soup.find_all(resources)
+    resources_urls = {}
     for tag in tags:
         attribute = TAG_TO_ATTRIBUTE_MAPPING[tag.name]
         tag_link = tag.get(attribute, '')
-        if not tag_link:
+        if not tag_link or not utils.is_same_netloc(url, tag_link):
             continue
-        if utils.is_same_netloc(url, tag_link):
-            resources_urls.append(
-                urljoin(
-                    '{0}/'.format(url),
-                    tag_link,
-                ),
-            )
-            resource_url = urljoin(
-                url,
-                tag.get(attribute, ''),
-            )
-            new_link = os.path.join(
-                resources_dir,
-                utils.build_name(resource_url),
-            )
-            tag[attribute] = new_link
-    return soup.prettify(formatter=FORMATTER)
+        resource_url = urljoin(
+            '{0}/'.format(url),
+            tag.get(attribute, ''),
+        )
+        resource_name = utils.build_name(resource_url)
+        resources_urls[resource_name] = urljoin('{0}/'.format(url), tag_link,)
+
+        new_link = os.path.join(
+            resources_dir,
+            resource_name,
+        )
+        tag[attribute] = new_link
+    return soup.prettify(formatter=FORMATTER), resources_urls
 
 
 def write_to_file(path: str, content, mode: str = 'wb'):
