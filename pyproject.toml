@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hexlet-code"
+name = "Andrka-page-loader"
 version = "0.8.0"
 description = "Page loader"
 authors = ["Andrka <postbox4mail@gmail.com>"]

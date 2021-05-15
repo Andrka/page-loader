@@ -1,6 +1,5 @@
 # Page loader
 
-[![Actions Status](https://github.com/Andrka/python-project-lvl3/workflows/hexlet-check/badge.svg)](https://github.com/Andrka/python-project-lvl3/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/0f10d4df5001658af2bd/maintainability)](https://codeclimate.com/github/Andrka/python-project-lvl3/maintainability) <a href="https://codeclimate.com/github/Andrka/python-project-lvl3/test_coverage"><img src="https://api.codeclimate.com/v1/badges/0f10d4df5001658af2bd/test_coverage" /></a> [![Github Actions Status](https://github.com/Andrka/python-project-lvl3/workflows/Python%20CI/badge.svg)](https://github.com/Andrka/python-project-lvl3/actions)
 
 "Page loader" is a written in Python utility which downloads requested web page with local resources.
@@ -9,7 +8,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install "Page l
 ```bash
 pip install --user -i https://test.pypi.org/simple andrka-page-loader --extra-index-url https://pypi.org/simple
 ```
-[![asciicast](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT.svg)](https://asciinema.org/a/Vh7BxxMSmT5bjEx6Kv7cE8kYT)
+[![asciicast](https://asciinema.org/a/1HF9qCWahgOaLvKeKL5tvK6VQ.svg)](https://asciinema.org/a/1HF9qCWahgOaLvKeKL5tvK6VQ)
 ## Usage
 As a script:
 ```bash
@@ -28,7 +27,7 @@ file_path = download('https://andrka.github.io/page-loader-test/', '/tmp')
 print(file_path)  # => '/tmp/andrka-github-io-page-loader-test-.html'
 ```
 ## A Simple Example
-[![asciicast](https://asciinema.org/a/ziRHTTljmPZzF0O10QpJ1niWh.svg)](https://asciinema.org/a/ziRHTTljmPZzF0O10QpJ1niWh)
+[![asciicast](https://asciinema.org/a/GJsTW4gkHDqbwNtY2Mw4CUcXT.svg)](https://asciinema.org/a/GJsTW4gkHDqbwNtY2Mw4CUcXT)
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 Please make sure to update tests as appropriate.

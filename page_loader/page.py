@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
-from page_loader import utils
+from page_loader import cli, utils
 from progress.bar import Bar
 
 TAG_TO_ATTRIBUTE_MAPPING = {
@@ -21,7 +21,7 @@ FORMATTER = 'html5'
 DIR_EXT = '_files'
 
 
-def download(url: str, output: str) -> str:
+def download(url: str, output: str = cli.DEFAULT_PATH) -> str:
     """Save requested html file with resources to given path."""
     logger = logging.getLogger('page_loader')
     html_content = get_data(url)
@@ -51,7 +51,10 @@ def download_resources(download_dir: str, resources_urls: dict):
             download_dir,
             resource_name,
         )
-        content = get_data(resource_url)
+        try:
+            content = get_data(resource_url)
+        except requests.HTTPError:
+            content = ''
         with Bar(
             'Saving "{0}"'.format(resource_url),
             max=len(content) / 1024,
@@ -96,8 +99,8 @@ def prepare_resources(
 
 
 def write_to_file(path: str, content, mode: str = 'wb'):
-    with open(path, mode) as data_file:
-        data_file.write(content)
+    with open(path, mode) as file:
+        file.write(content)
 
 
 def make_dir(path: str):
